@@ -1,5 +1,5 @@
 local Log = {
-	level = "debug",
+	level = "info",
 }
 
 function Log.dbg(...)

@@ -1,0 +1,96 @@
+let Token = {
+	type: "",
+	value: ""
+};
+
+fn Token:new(type, value) {
+	let self = setmetatable({}, { __index = Token });
+	self.type = type;
+	self.value = value;
+	return self;
+}
+
+let TokenType = {
+	illegal = "illegal",
+	int = "int",
+	ident = "ident",
+	assign = "=",
+	plus = "+",
+ 	comma = ",",
+	lparen = "(",
+	rparen = ")",
+	lsquirly = "{",
+	rsquirly = "}"
+};
+
+let Lexer = {};
+
+fn Lexer:new(input) {
+	let self = setmetatable({}, { __index = Lexer });
+	self.input = input;
+	self.len = string.len(input);
+	self.pos = 0;
+	self.lookahead = 0;
+	self.ch = 0;
+	self:read_char();
+	return self;
+}
+
+fn Lexer:next() {
+	self:skip_whitespace();
+
+	let str = string.char(self.ch);
+	
+	let tok = Token:new(TokenType.illegal);
+}
+
+fn Lexer:read_char() {
+	if self.lookahead >= self.len {
+		self.ch = 0;
+	} else {
+		self.ch = self.input[self.lookahead];
+	};
+
+	self.pos = self.lookahead;
+	self.lookahead = self.lookahead + 1;
+}
+
+fn Lexer:read_string() {
+	let buf = "";
+	while true {
+		self:read_char();
+		if self.ch == '"' || self.ch == 0 {
+			return buf;
+		} else {
+			buf = buf .. self.ch;
+		};
+	};
+}
+
+fn Lexer:read_ident() {
+	let buf = "";
+	
+
+	while string.char(self.ch):match("([a-zA-Z_])") != nil {
+		self:read_char();
+		buf = buf .. self.ch;
+	};
+	return buf;
+}
+
+fn Lexer:read_int() {
+	let buf = "";
+	while string.char(self.ch):match("[0-9]") {
+		self:read_char();
+		buf = buf .. self.ch;	
+	};
+	return buf;
+}
+
+fn Lexer:skip_whitespace() {
+	while string.char(self.ch):match("[ \t\n]") {
+		self:read_char();
+	};
+}
+
+

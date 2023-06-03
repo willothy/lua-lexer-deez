@@ -1,6 +1,5 @@
 local ffi = require("ffi")
 
-local Lexer = require("lexer")
 local Token = require("token")
 local Node = require("node")
 local Log = require("log")
@@ -22,7 +21,7 @@ end
 function Parser:expected_token(expected)
 	local expected_str = Token.type_name[tonumber(expected)]
 	local found_str = Token.type_name[tonumber(self.cur_token.type)]
-	local msg = string.format("expected %s, got %s", expected_str, found_str)
+	local msg = string.format("expected %s, got %s at %s", expected_str, found_str, self.cur_token.span.start_pos)
 	Log.error(msg)
 	table.insert(self.errors, msg)
 end
@@ -180,6 +179,7 @@ function Parser:parse_expr(precedence)
 	Log.dbg("parse_expr " .. tostring(self.cur_token))
 	local prefix = self.prefix_parse_fns[tonumber(self.cur_token.type)]
 	if not prefix then
+		Log.error("no prefix parse function for " .. tostring(self.cur_token))
 		self:expected_token(Token.type.eof)
 		return nil
 	end
@@ -229,19 +229,6 @@ function Parser:peek_precedence()
 end
 
 Parser.precedences = {
-	-- ["*"] = 0,
-	-- ["/"] = 0,
-	-- ["%"] = 0,
-	-- ["+"] = 1,
-	-- ["-"] = 1,
-	-- ["=="] = 2,
-	-- ["!="] = 2,
-	-- ["<"] = 3,
-	-- [">"] = 3,
-	-- ["<="] = 3,
-	-- [">="] = 3,
-	-- ["&&"] = 4,
-	-- ["||"] = 4,
 	["*"] = 4,
 	["/"] = 4,
 	["%"] = 4,
@@ -559,10 +546,12 @@ function Parser:parse_func_params()
 		self:next_token()
 		return params
 	end
-	table.insert(params, self:parse_ident_expr())
+	table.insert(params, ffi.string(self.cur_token.literal))
+	self:next_token()
 	while self.cur_token.type == Token.type.comma do
 		self:next_token()
-		table.insert(params, self:parse_ident_expr())
+		table.insert(params, ffi.string(self.cur_token.literal))
+		self:next_token()
 	end
 	if self.cur_token.type ~= Token.type.rparen then
 		self:expected_token(Token.type.rparen)
