@@ -75,7 +75,7 @@ function Generator:gen_expr(expr)
 	elseif expr.type == "dict" then
 		local elems = {}
 		for k, v in pairs(expr.values) do
-			table.insert(elems, k.value .. " = " .. self:gen_expr(v))
+			table.insert(elems, k .. " = " .. self:gen_expr(v))
 		end
 		return "{" .. table.concat(elems, ", ") .. "}"
 	elseif expr.type == "call" then
@@ -114,8 +114,7 @@ local test = function()
 	fn a:x() {
 
 	};
-	let x = { x = 10, y = 25 };
-	let x = a:y();
+	let x = a:y({ a :  { x: fn() {} } });
 ]]))
 	local ast = parser:parse()
 	-- print(program)

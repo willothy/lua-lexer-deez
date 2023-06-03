@@ -371,11 +371,8 @@ function Parser:parse_dict_expr()
 	end
 	self:next_token()
 	while self.cur_token.type ~= Token.type.rsquirly do
-		local key = self:parse_expr(0)
-		if not key then
-			self:expected_token(Token.type.rsquirly)
-			return nil
-		end
+		local key = ffi.string(self.cur_token.literal)
+		self:next_token()
 		if self.cur_token.type ~= Token.type.colon then
 			self:expected_token(Token.type.colon)
 			return nil
